@@ -27,16 +27,23 @@ defaults
 # Set up application listeners here.
 listen application 0.0.0.0:<%= node["haproxy"]["incoming_port"] %>
   balance <%= node["haproxy"]["balance_algorithm"] %>
-  <% @pool_members.each do |member| -%>
-  server <%= member[:hostname] %> <%= member[:ipaddress] %>:<%= node["haproxy"]["member_port"] %> weight 1 maxconn <%= node["haproxy"]["member_max_connections"] %> check
+  <% @backend_servers.each do |server| -%>
+  server <%= server[:hostname] -%> 
+    <%= server[:ipaddress] -%>:<%= server[:port] -%> 
+    <%= "cookie #{server[:hostname]}" unless node["haproxy"]["cookie_prefix"].nil? && node["haproxy"]["cookie_insert"].nil? -%>
+    weight <%= server[:proxy_weight] -%> 
+    maxconn <%= server[:max_connections] %> check
   <% end -%>
 
 <% if node["haproxy"]["enable_ssl"] -%>
 listen ssl_application 0.0.0.0:<%= node["haproxy"]["ssl_incoming_port"] %>
   balance <%= node["haproxy"]["balance_algorithm"] %>
   mode tcp
-  <% @pool_members.each do |member| -%>
-  server <%= member[:hostname] %> <%= member[:ipaddress] %>:<%= node["haproxy"]["ssl_member_port"] %> weight 1 maxconn <%= node["haproxy"]["member_max_connections"] %> check
+<% @backend_servers.each do |server| -%>
+  server <%= server[:hostname] -%>
+         <%= server[:ipaddress] -%>:<%= server[:ssl_port] -%> 
+         weight <%= server[:proxy_weight] -%> 
+         maxconn <%= server[:max_connections] %> check
   <% end -%>
 <% end -%>
 
