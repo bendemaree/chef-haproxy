@@ -40,10 +40,6 @@ pool_members.map! do |member|
   {:ipaddress => server_ip, :hostname => member['hostname']}
 end
 
-package "haproxy" do
-  action :install
-end
-
 template "/etc/default/haproxy" do
   source "haproxy-default.erb"
   owner "root"
